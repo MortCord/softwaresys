@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "../App.css";
 
 export default function Program() {
     const [prog_name,setProgName]=useState('');
@@ -7,6 +8,9 @@ export default function Program() {
     const [idCategory, setProgCatId]=useState('');
     const [idDeveloper, setProgDevId]=useState('');
     const [programs, setPrograms]=useState([]);
+    const [sortByCategory, setSortByCategory]=useState('');
+    const [sortByDeveloper, setSortByDeveloper]=useState('');
+    const [filteredPrograms, setFilteredPrograms] = useState([]);
 
     const handleClick=(e)=>{
         e.preventDefault();
@@ -25,10 +29,25 @@ export default function Program() {
         fetch("http://localhost:8080/program/getAll")
         .then(res=>res.json())
         .then((result)=>{
+            console.log(result);
             setPrograms(result);
         }
     )
-    },[])
+    },[]);
+
+
+
+    const handleFilter = (e) => {
+        e.preventDefault();
+        let filtered = programs;
+        if (sortByCategory !== '') {
+            filtered = filtered.filter(program => program.category.toLowerCase().includes(sortByCategory.toLowerCase()));
+        }
+        if (sortByDeveloper !== '') {
+            filtered = filtered.filter(program => program.developer.toLowerCase().includes(sortByDeveloper.toLowerCase()));
+        }
+        setFilteredPrograms(filtered);
+    };
 
   return (
     <div>
@@ -42,24 +61,50 @@ export default function Program() {
         <br/>
         <button onClick={handleClick}>Submit</button>
     </form>
+    <h2>Find by category</h2>
+    <form>
+        <input type="text" placeholder="Category name..." value={sortByCategory} onChange={(e) => setSortByCategory(e.target.value)} />
+        <button onClick={handleFilter}>Find!</button>
+    </form>
+    <h2>Find by developer</h2>
+    <form>
+        <input type="text" placeholder="Developer name..." value={sortByDeveloper} onChange={(e)=> setSortByDeveloper(e.target.value)} />
+        <button onClick={handleClick}>Find!</button>
+    </form>
+    <br/>
     <div className="renderPrograms">
+    <table>
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Program Name</th>
+            <th>Program Desc</th>
+            <th>Program Link</th>
+            <th>Category ID</th>
+            <th>Developer ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
         {programs.map(program=>(
-            <div key={program.id_prog}>
-                <b>
-                    Name:{program.prog_name}
-                </b>
-                <br/>
-                <b>
-                    Description:{program.prog_desc}
-                </b>
-                <br/>
-                <b>
-                    Link:{program.prog_link}
-                </b>
-                <br/>
-            </div>
-
+            <tr key={program.id_prog}>
+                <td>{program.id_prog}</td>
+                <td>{program.prog_name}</td>
+                <td>{program.prog_desc}</td>
+                <td><a href={"https://"+program.prog_link}>{program.prog_link}</a></td>
+                <td>{program.idCategory}</td>
+                <td>{program.idDeveloper}</td>
+                <td><a href="" onClick={(e)=>{
+                    e.preventDefault();
+                    fetch("http://localhost:8080/program/delete/" + program.id_prog,{
+                        method: 'DELETE',
+                        headers:{'Content-Type':'application/json'}
+                    })
+                }}>Delete</a><br/><a href="">Put</a></td>
+            </tr>
         ))}
+    </tbody>
+</table>
     </div>
     </div>
     
