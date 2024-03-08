@@ -79,6 +79,8 @@ public class ProgramServiceImpl implements ProgramService {
                         dto.setProgramDesc(program.getProg_desc());
                         dto.setDeveloperName(developer.getDeveloper_Name());
                         dto.setProgramLink(program.getProg_link());
+                        dto.setCategoryId(category.getId_cat());
+                        dto.setDeveloperId(developer.getId_dev());
                         return dto;
                     } else {
                         return null;

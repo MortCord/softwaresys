@@ -11,6 +11,8 @@ public class ProgramDetails {
     private String developerName;
 
     private String programLink;
+    private int categoryId;
+    private int developerId;
 
     public ProgramDetails(){
 
@@ -62,5 +64,21 @@ public class ProgramDetails {
 
     public void setProgramLink(String programLink) {
         this.programLink = programLink;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public int getDeveloperId() {
+        return developerId;
+    }
+
+    public void setDeveloperId(int developerId) {
+        this.developerId = developerId;
     }
 }

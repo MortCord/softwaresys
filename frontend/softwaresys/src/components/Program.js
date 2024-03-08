@@ -19,6 +19,10 @@ export default function Program() {
     const [sortByName, setSortByName] = useState('');
     const [devName, setDevName] = useState('');
     const [catName, setCatName] = useState('');
+    const [catPrevId, setCatPrevId] = useState(0);
+    const [devPrevId, setDevPrevId] = useState(0);
+
+    console.log(isPut);
 
     useEffect(()=>{
         fetch("http://localhost:8080/program/getAll")
@@ -69,213 +73,313 @@ export default function Program() {
     const handleClick=(e)=>{
         e.preventDefault();
         console.log(isPut);
-        if(isPut === true){
-
+        if (isPut === true) {
             var isCatName = false;
             var isDevName = false;
             var catId = 0;
             var devId = 0;
-            for(const el of categories){
-                if(catName === el.category_Name){
+        
+            // Check if category exists
+            for (const el of categories) {
+                if (catName === el.category_Name) {
                     isCatName = true;
                     console.log("Category True");
                     break;
                 }
             }
-
-            if(isCatName === false){
-                const category = {"category_Name":catName}
+        
+            // If category doesn't exist, add it
+            if (isCatName === false) {
+                const category = { "category_Name": catName };
                 console.log(category);
-                fetch("http://localhost:8080/category/add",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify(category)
-                }).then(()=>{
+                fetch("http://localhost:8080/category/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(category)
+                })
+                .then(() => {
                     console.log("New category");
+                    // After adding the category, fetch categories again to update the state
+                    return fetch("http://localhost:8080/category/getAll");
+                })
+                .then(res => res.json())
+                .then(categories => {
+                    // Update categories state
+                    setCategories(categories);
+        
+                    // Find the ID of the category
+                    for (const el of categories) {
+                        if (catName === el.category_Name) {
+                            catId = el.id_cat;
+                            console.log("Category Id " + catId);
+                            updateProgram(catId); // Call the function to update program after obtaining the category ID
+                            break;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Error adding category:", error);
                 });
+            } else {
+                // If category exists, directly update the program
+                updateProgram(catId);
             }
-
-
-            for(const el of developers){
-                if(devName === el.developer_Name){
-                    isDevName = true;
-                    console.log("Developer True");
-                    break;
+        
+            // Function to update the program
+            function updateProgram(catId) {
+                // Check if developer exists
+                for (const el of developers) {
+                    if (devName === el.developer_Name) {
+                        isDevName = true;
+                        console.log("Developer True");
+                        break;
+                    }
                 }
-            }
-            
-
-            if(isDevName === false){
-                const developer = {"developer_Name":devName}
-                console.log(developer);
-                fetch("http://localhost:8080/dev/add",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify(developer)
-                }).then(()=>{
-                    console.log("New developer");
-                });
-            }
-
-            fetch("http://localhost:8080/category/getAll")
-            .then(res=>res.json())
-            .then((result)=>{
-                console.log("Categories")
-                console.log(result);
-                setCategories(result);
-            })
-            .catch(error => {
-                console.error("Error fetching programs:", error);
-            });
-
-            for(const el of categories){
-                if(catName === el.category_Name){
-                    catId = el.id_cat;
-                    console.log("Category Id " + catId);
-                    break;
-                }
-            }
-
-            fetch("http://localhost:8080/dev/getAll")
-            .then(res=>res.json())
-            .then((result)=>{
-                console.log("dev")
-                console.log(result);
-                setDevelopers(result);
-            })
-            .catch(error => {
-                console.error("Error fetching programs:", error);
-            });
-            for(const el of developers){
-                if (devName === el.developer_Name){
-                    devId = el.id_dev;
-                    console.log("Developer Id " + devId);
-                    break;
-                }
-            }
-            console.log(catId);
-            console.log(devId);
-
-
-            const program ={id_prog,prog_name,prog_desc,prog_link,"idCategory":catId,"idDeveloper":devId};
-            fetch("http://localhost:8080/program/update/" + id_prog,{
-                method:'PUT',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify(program)
-            })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Program updated successfully');
-
+        
+                // If developer doesn't exist, add it
+                if (isDevName === false) {
+                    const developer = { "developer_Name": devName };
+                    console.log(developer);
+                    fetch("http://localhost:8080/dev/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(developer)
+                    })
+                    .then(() => {
+                        console.log("New developer");
+                        // After adding the developer, fetch developers again to update the state
+                        return fetch("http://localhost:8080/dev/getAll");
+                    })
+                    .then(res => res.json())
+                    .then(developers => {
+                        // Update developers state
+                        setDevelopers(developers);
+        
+                        // Find the ID of the developer
+                        for (const el of developers) {
+                            if (devName === el.developer_Name) {
+                                devId = el.id_dev;
+                                console.log("Developer Id " + devId);
+                                break;
+                            }
+                        }
+        
+                        // Once developer ID is obtained, update the program
+                        const program = {
+                            "id_prog": id_prog,
+                            "prog_name": prog_name,
+                            "prog_desc": prog_desc,
+                            "prog_link": prog_link,
+                            "idCategory": catId,
+                            "idDeveloper": devId
+                        };
+        
+                        console.log(program);
+        
+                        fetch("http://localhost:8080/program/update/" + id_prog, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(program)
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log('Program updated successfully');
+                            } else {
+                                console.error('Failed to update program');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating program:', error);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching developers:", error);
+                    });
                 } else {
-                    console.error('Failed to update program');
-
+                    // If developer exists, directly update the program
+                    const program = {
+                        "id_prog": id_prog,
+                        "prog_name": prog_name,
+                        "prog_desc": prog_desc,
+                        "prog_link": prog_link,
+                        "idCategory": catId,
+                        "idDeveloper": devId
+                    };
+        
+                    console.log(program);
+        
+                    fetch("http://localhost:8080/program/update/" + id_prog, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(program)
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('Program updated successfully');
+                        } else {
+                            console.error('Failed to update program');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating program:', error);
+                    });
                 }
-            })
-            .catch(error => {
-                console.error('Error updating program:', error);
-
-            });
-            setIsPut(false)
-        }else{
+            }
+            setIsPut(false);
+        }        
+        else {
             var isCatName = false;
             var isDevName = false;
-            var catId = 0;
-            var devId = 0;
-            for(const el of categories){
-                if(catName === el.category_Name){
+        
+            // Check if category exists
+            for (const el of categories) {
+                if (catName === el.category_Name) {
                     isCatName = true;
                     console.log("Category True");
                     break;
                 }
             }
-
-            if(isCatName === false){
-                const category = {"category_Name":catName}
+        
+            // If category doesn't exist, add it
+            if (isCatName === false) {
+                const category = { "category_Name": catName };
                 console.log(category);
-                fetch("http://localhost:8080/category/add",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify(category)
-                }).then(()=>{
-                    console.log("New category");
+                fetch("http://localhost:8080/category/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(category)
+                })
+                .then(() => {
+                    console.log("New category added");
+                    // After adding the category, fetch categories again to update the state
+                    return fetch("http://localhost:8080/category/getAll");
+                })
+                .then(res => res.json())
+                .then(categories => {
+                    // Update categories state
+                    setCategories(categories);
+        
+                    // Find the ID of the newly added category
+                    for (const el of categories) {
+                        if (catName === el.category_Name) {
+                            const catId = el.id_cat;
+                            console.log("Category Id: " + catId);
+                            createProgram(catId); // Call the function to create program after obtaining the category ID
+                            break;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Error adding category:", error);
                 });
+            } else {
+                // If category exists, directly create the program
+                createProgram(catId);
             }
-
-
-            for(const el of developers){
-                if(devName === el.developer_Name){
-                    isDevName = true;
-                    console.log("Developer True");
-                    break;
+        
+            // Function to create the program
+            function createProgram(catId) {
+                // Check if developer exists
+                for (const el of developers) {
+                    if (devName === el.developer_Name) {
+                        isDevName = true;
+                        console.log("Developer True");
+                        break;
+                    }
+                }
+        
+                // If developer doesn't exist, add it
+                if (isDevName === false) {
+                    const developer = { "developer_Name": devName };
+                    console.log(developer);
+                    fetch("http://localhost:8080/dev/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(developer)
+                    })
+                    .then(() => {
+                        console.log("New developer added");
+                        // After adding the developer, fetch developers again to update the state
+                        return fetch("http://localhost:8080/dev/getAll");
+                    })
+                    .then(res => res.json())
+                    .then(developers => {
+                        // Update developers state
+                        setDevelopers(developers);
+        
+                        let devId = 0;
+        
+                        for (const el of developers) {
+                            if (devName === el.developer_Name) {
+                                devId = el.id_dev;
+                                console.log("Developer Id: " + devId);
+                                break;
+                            }
+                        }
+        
+                        // Once developer ID is obtained, create the program
+                        const program = {
+                            "prog_name": prog_name,
+                            "prog_desc": prog_desc,
+                            "prog_link": prog_link,
+                            "idCategory": catId,
+                            "idDeveloper": devId
+                        };
+        
+                        console.log(program);
+        
+                        // Add the program
+                        fetch("http://localhost:8080/program/add", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(program)
+                        })
+                        .then(() => {
+                            console.log("New program added");
+                        })
+                        .catch(error => {
+                            console.error("Error adding program:", error);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching developers:", error);
+                    });
+                } else {
+                    // If developer exists, directly create the program
+                    const program = {
+                        "prog_name": prog_name,
+                        "prog_desc": prog_desc,
+                        "prog_link": prog_link,
+                        "idCategory": catId,
+                        "idDeveloper": devId
+                    };
+        
+                    console.log(program);
+        
+                    // Add the program
+                    fetch("http://localhost:8080/program/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(program)
+                    })
+                    .then(() => {
+                        console.log("New program added");
+                    })
+                    .catch(error => {
+                        console.error("Error adding program:", error);
+                    });
                 }
             }
-            
-
-            if(isDevName === false){
-                const developer = {"developer_Name":devName}
-                console.log(developer);
-                fetch("http://localhost:8080/dev/add",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify(developer)
-                }).then(()=>{
-                    console.log("New developer");
-                });
-            }
-
-            fetch("http://localhost:8080/category/getAll")
-            .then(res=>res.json())
-            .then((result)=>{
-                console.log("Categories")
-                console.log(result);
-                setCategories(result);
-            })
-            .catch(error => {
-                console.error("Error fetching programs:", error);
-            });
-
-            for(const el of categories){
-                if(catName === el.category_Name){
-                    catId = el.id_cat;
-                    console.log("Category Id " + catId);
-                    break;
-                }
-            }
-
-            fetch("http://localhost:8080/dev/getAll")
-            .then(res=>res.json())
-            .then((result)=>{
-                console.log("dev")
-                console.log(result);
-                setDevelopers(result);
-            })
-            .catch(error => {
-                console.error("Error fetching programs:", error);
-            });
-            for(const el of developers){
-                if (devName === el.developer_Name){
-                    devId = el.id_dev;
-                    console.log("Developer Id " + devId);
-                    break;
-                }
-            }
-            console.log(catId);
-            console.log(devId);
-
-            const program ={prog_name,prog_desc,prog_link,"idCategory":catId,"idDeveloper":devId};
-            console.log(program);
-            fetch("http://localhost:8080/program/add",{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify(program)
-            }).then(()=>{
-                console.log("New program");
-            })
         }
+        
+        
+        
+        
+        
 
 
     }
+        
 
     useEffect(() => {
         let filtered = programDetails;
@@ -372,6 +476,8 @@ export default function Program() {
                     setProgLink(program.programLink);
                     setCatName(program.categoryName)
                     setDevName(program.developerName);
+                    setCatPrevId(program.categoryId);
+                    setDevPrevId(program.developerId);
                 }}>Put</a></td>
             </tr>
         ))}
