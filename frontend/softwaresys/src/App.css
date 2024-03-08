@@ -49,3 +49,39 @@ th, td {
 th {
   background-color: #f2f2f2;
 }
+
+#form{
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border: 1px #000 dotted;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 90%;
+}
+
+#form input{
+  width: 200px;
+  height: 50px;
+}
+
+#form textarea{
+  width: 200px;
+  height: 50px;
+}
+
+#form button{
+  width: 200px;
+  height: 50px;
+  border: none;
+}
+
+#form button:hover{
+  background: #6e6868;
+}
+
+.forForm{
+  display: flex;
+  justify-content: center;
+}

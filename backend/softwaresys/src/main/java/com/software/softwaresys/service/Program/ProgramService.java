@@ -1,6 +1,7 @@
 package com.software.softwaresys.service.Program;
 
 import com.software.softwaresys.model.Program;
+import com.software.softwaresys.model.ProgramDetails;
 
 import java.util.List;
 
@@ -9,5 +10,7 @@ public interface ProgramService {
     public List<Program> getAllPrograms();
 
     public void deleteById(int id);
-    public void updateProgram(int id, Program program);
+    public Program updateProgram(int id, Program updatedProgram);
+
+    public List<ProgramDetails> getProgramDetails();
 }

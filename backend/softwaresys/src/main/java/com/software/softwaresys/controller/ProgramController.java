@@ -1,6 +1,7 @@
 package com.software.softwaresys.controller;
 
 import com.software.softwaresys.model.Program;
+import com.software.softwaresys.model.ProgramDetails;
 import com.software.softwaresys.service.Program.ProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,15 +33,12 @@ public class ProgramController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateProgram(@RequestParam int id, @RequestBody Program program){
-        try {
-            // Call the service method to update the program
-            programService.updateProgram(id, program);
-            // Return a success response
-            return ResponseEntity.ok().build();
-        }catch (Exception e) {
-            // Handle generic exception
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update program");
-        }
+    public Program updateProgram(@PathVariable int id, @RequestBody Program program){
+        return programService.updateProgram(id, program);
+    }
+
+    @GetMapping("/getDetails")
+    public List<ProgramDetails> getProgramDetails(){
+        return programService.getProgramDetails();
     }
 }
